@@ -1,6 +1,6 @@
 {
     "name": "nhosting/directadmin",
-    "description": "DirectAdmin api class.",
+    "description": "DirectAdmin API Class.",
     "license": "MIT",
     "authors": [
         {
