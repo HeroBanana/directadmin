@@ -81,7 +81,7 @@ class DirectAdminClient extends Client
             $response = parent::request($method, $uri, $options);
         }
         catch(\Exception $e) {
-            throw new DirectAdminRequestException(sprintf('DirectAdmin %s %s request failed.', $method, $url), $e->getCode(), $e);
+            throw new DirectAdminRequestException(sprintf('DirectAdmin %s %s request failed.', $method, $uri), $e->getCode(), $e);
         }
         
         if($response->getHeader('Content-Type')[0] === 'text/html') {
