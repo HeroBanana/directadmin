@@ -44,6 +44,16 @@ class DirectAdmin
     }
     
     /**
+     * Get DirectAdmin Client
+     * 
+     * @return \NHosting\DirectAdmin\DirectAdminClient
+     */
+    public function getClient(): DirectAdminClient
+    {
+        return $this->client;
+    }
+    
+    /**
      * Send command.
      * 
      * @param string $method    Method get or post.
@@ -54,7 +64,7 @@ class DirectAdmin
      */
     private function send(string $method, string $command, array $options = []): array 
     {
-        $result = $this->client->request($method, self::CMD_PREFIX . $command, $options);
+        $result = $this->client->da_request($method, self::CMD_PREFIX . $command, $options);
         
         return $result;
     }

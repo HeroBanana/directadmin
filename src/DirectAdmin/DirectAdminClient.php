@@ -23,7 +23,7 @@ use NHosting\DirectAdmin\Exceptions\DirectAdminBadContentException;
  * 
  * @author N.J. Vlug <info@ruddy.nl>
  */
-class DirectAdminClient
+class DirectAdminClient extends Client
 {   
     /**
      * @var int Last request timestamp.
@@ -31,9 +31,9 @@ class DirectAdminClient
     private $lastRequest = 0;
     
     /**
-     * @var Client
+     * @var string Base Uri.
      */
-    private $conn = null;
+    private $baseUri = null;
     
     /**
      * DirectAdminClient Constructor
@@ -44,17 +44,27 @@ class DirectAdminClient
      */
     public function __construct(string $url, string $username, string $password) {
         
-        $baseUri = rtrim($url, '/') . '/';
+        $this->baseUri = rtrim($url, '/') . '/';
 
         $config = [
-            'base_uri' => $baseUri,
+            'base_uri' => $this->baseUri,
             'auth' => [
                 $username,
                 $password
             ]
         ];
 
-        $this->conn = new Client($config);
+        parent::__construct($config);
+    }
+    
+    /**
+     * Get base Uri.
+     * 
+     * @return string
+     */
+    public function getBaseUri(): string 
+    {
+        return $this->baseUri;
     }
     
     /**
@@ -62,7 +72,7 @@ class DirectAdminClient
      * 
      * @return int
      */
-    public function getLastRequest():int 
+    public function getLastRequest(): int 
     {
         return $this->lastRequest;
     }
@@ -76,12 +86,12 @@ class DirectAdminClient
      * 
      * @return mixed
      */
-    public function request(string $method, string $uri = '', array $options = []): array
+    public function da_request(string $method, string $uri = '', array $options = []): array
     {
         $this->lastRequest = microtime(true);
         
         try {
-            $response = $this->conn->request($method, $uri, $options);
+            $response = $this->request($method, $uri, $options);
         }
         catch(\Exception $e) {
             
