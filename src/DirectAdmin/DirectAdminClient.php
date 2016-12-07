@@ -12,6 +12,9 @@ namespace NHosting\DirectAdmin;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7;
 
+use NHosting\DirectAdmin\Exceptions\DirectAdminRequestException;
+use NHosting\DirectAdmin\Exceptions\DirectAdminBadContentException;
+
 /**
  * DirectAdminClient Class
  * 
@@ -20,7 +23,7 @@ use GuzzleHttp\Psr7;
 class DirectAdminClient extends Client
 {
     /**
-     * @var string Base url.
+     * @var string Base URL.
      */
     private $baseUrl = null;
     
@@ -32,7 +35,7 @@ class DirectAdminClient extends Client
     /**
      * DirectAdminClient Constructor
      * 
-     * @param string $url           DirectAdmin url.
+     * @param string $url           DirectAdmin URL.
      * @param string $username      DirectAdmin username.
      * @param string $password      DirectAdmin password.
      */
@@ -64,17 +67,30 @@ class DirectAdminClient extends Client
     /**
      * Request to Server.
      * 
-     * @param string $method
-     * @param string $uri
-     * @param array $options
+     * @param string $method    Method.
+     * @param string $uri       Request URL.
+     * @param array $options    Additional options.
      * 
      * @return mixed
      */
-    public function request(string $method, string $uri = '', array $options = [])
+    public function request(string $method, string $uri = '', array $options = []): array
     {
         $this->lastRequest = microtime(true);
         
-        return parent::request($method, $uri, $options);
+        try {
+            $response = parent::request($method, $uri, $options);
+        }
+        catch(\Exception $e) {
+            throw new DirectAdminRequestException(sprintf('DirectAdmin %s %s request failed.', $method, $url), $e->getCode(), $e);
+        }
+        
+        if($response->getHeader('Content-Type')[0] === 'text/html') {
+            throw new DirectAdminBadContentException(sprintf('DirectAdmin %s %s returned text/html.', $method, $uri));
+        }
+
+        $body = $response->getBody()->getContents();
+
+        return $this->responseToArray($body);
     }
     
     /**
@@ -90,7 +106,9 @@ class DirectAdminClient extends Client
             return chr($val[1]);
         }, $data);
         
-        return Psr7\parse_query($unescaped);
+        $result = Psr7\parse_query($unescaped);
+        
+        return $this->sanitizeArray($result);
     }
     
     /**

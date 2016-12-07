@@ -22,6 +22,11 @@ class DirectAdmin
     const VERSION = '0.1';
     
     /**
+     * @const string Command API prefix.
+     */
+    const CMD_PREFIX = '/CMD_API_';
+    
+    /**
      * @var DirectAdminClient
      */
     private $client = null;
@@ -36,5 +41,21 @@ class DirectAdmin
     public function __construct(string $url, string $username, string $password) 
     {
         $this->client = new DirectAdminClient($url, $username, $password);
+    }
+    
+    /**
+     * Send command
+     * 
+     * @param string $method    Method get or post.
+     * @param string $command   DirectAdmin command.
+     * @param array $options    Additional options.
+     * 
+     * @return array
+     */
+    private function send(string $method, string $command, array $options = []): array 
+    {
+        $result = $this->client->request($method, self::CMD_PREFIX . $command, $options);
+        
+        return $result;
     }
 }
