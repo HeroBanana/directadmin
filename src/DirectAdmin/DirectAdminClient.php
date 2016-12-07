@@ -11,8 +11,11 @@ namespace NHosting\DirectAdmin;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 
 use NHosting\DirectAdmin\Exceptions\DirectAdminRequestException;
+use NHosting\DirectAdmin\Exceptions\DirectAdminTransferException;
 use NHosting\DirectAdmin\Exceptions\DirectAdminBadContentException;
 
 /**
@@ -20,17 +23,17 @@ use NHosting\DirectAdmin\Exceptions\DirectAdminBadContentException;
  * 
  * @author N.J. Vlug <info@ruddy.nl>
  */
-class DirectAdminClient extends Client
-{
-    /**
-     * @var string Base URL.
-     */
-    private $baseUrl = null;
-    
+class DirectAdminClient
+{   
     /**
      * @var int Last request timestamp.
      */
     private $lastRequest = 0;
+    
+    /**
+     * @var Client
+     */
+    private $conn = null;
     
     /**
      * DirectAdminClient Constructor
@@ -41,17 +44,17 @@ class DirectAdminClient extends Client
      */
     public function __construct(string $url, string $username, string $password) {
         
-        $this->baseUrl = trim($url) . '/';
-        
+        $baseUri = rtrim($url, '/') . '/';
+
         $config = [
-            'base_url' => $this->baseUrl,
+            'base_uri' => $baseUri,
             'auth' => [
                 $username,
                 $password
             ]
         ];
 
-        parent::__construct($config);
+        $this->conn = new Client($config);
     }
     
     /**
@@ -65,7 +68,7 @@ class DirectAdminClient extends Client
     }
     
     /**
-     * Request to Server.
+     * DirectAdmin request to Server.
      * 
      * @param string $method    Method.
      * @param string $uri       Request URL.
@@ -78,10 +81,17 @@ class DirectAdminClient extends Client
         $this->lastRequest = microtime(true);
         
         try {
-            $response = parent::request($method, $uri, $options);
+            $response = $this->conn->request($method, $uri, $options);
         }
         catch(\Exception $e) {
-            throw new DirectAdminRequestException(sprintf('DirectAdmin %s %s request failed.', $method, $uri), $e->getCode(), $e);
+            
+            if($e instanceof RequestException) {
+                throw new DirectAdminRequestException(sprintf('DirectAdmin %s %s request failed.', $method, $uri));
+            }
+            
+            if($e instanceof TransferException) {
+                throw new DirectAdminTransferException(sprintf('DirectAdmin %s %s transfer failed.', $method, $uri));
+            }
         }
         
         if($response->getHeader('Content-Type')[0] === 'text/html') {
