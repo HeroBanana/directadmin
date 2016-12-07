@@ -10,6 +10,7 @@
 namespace NHosting\DirectAdmin;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7;
 
 /**
  * DirectAdminClient Class
