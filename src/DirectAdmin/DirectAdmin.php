@@ -27,12 +27,12 @@ class DirectAdmin
     const CMD_PREFIX = '/CMD_API_';
     
     /**
-     * @var DirectAdminClient
+     * @var DirectAdminClient.
      */
     private $client = null;
     
     /**
-     * DirectAdmin Constructor
+     * DirectAdmin Constructor.
      * 
      * @param string $url           DirectAdmin url.
      * @param string $username      DirectAdmin username.
@@ -44,7 +44,7 @@ class DirectAdmin
     }
     
     /**
-     * Send command
+     * Send command.
      * 
      * @param string $method    Method get or post.
      * @param string $command   DirectAdmin command.
@@ -57,5 +57,35 @@ class DirectAdmin
         $result = $this->client->request($method, self::CMD_PREFIX . $command, $options);
         
         return $result;
+    }
+    
+    /**
+     * Get Request.
+     * 
+     * @param string $command   DirectAdmin command.
+     * @param array $options    Additional options.
+     * 
+     * @return array
+     */
+    public function get(string $command, array $options = []): array 
+    {
+        return $this->send('GET', $command, [
+            'query' => $options
+        ]);
+    }
+    
+    /**
+     * Post Request.
+     * 
+     * @param string $command   DirectAdmin command.
+     * @param array $options    Additional options.
+     * 
+     * @return array
+     */
+    public function post(string $command, array $options = []): array 
+    {
+        return $this->send('POST', $command, [
+            'form_params' => $options
+        ]);
     }
 }
