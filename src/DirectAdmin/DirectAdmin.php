@@ -22,7 +22,6 @@ class DirectAdmin
     const VERSION = '0.1';
     
     /**
-     *
      * @var DirectAdminClient
      */
     private $client = null;

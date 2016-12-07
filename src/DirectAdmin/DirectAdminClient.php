@@ -75,4 +75,36 @@ class DirectAdminClient extends Client
         
         return parent::request($method, $uri, $options);
     }
+    
+    /**
+     * Processes DirectAdmin style encoded responses into a sane array.
+     * 
+     * @param string $data
+     * 
+     * @return array
+     */
+    private function responseToArray(string $data): array 
+    {
+        $unescaped = preg_replace_callback('/&#([0-9]{2})/', function ($val) {
+            return chr($val[1]);
+        }, $data);
+        
+        return Psr7\parse_query($unescaped);
+    }
+    
+    /**
+     * Ensures a DA-style response element is wrapped properly as an array.
+     *
+     * @param mixed $result     Messy input
+     * 
+     * @return array            Sane output
+     */
+    private function sanitizeArray($result): array 
+    {
+        if (count($result) == 1 && isset($result['list[]'])) {
+            $result = $result['list[]'];
+        }
+        
+        return is_array($result) ? $result : [$result];
+    }
 }
